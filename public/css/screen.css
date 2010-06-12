@@ -1,0 +1,179 @@
+/* @group scrollbar */
+
+/* http://almaer.com/scrollbar/debug.html */
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-button:start:decrement,
+::-webkit-scrollbar-button:end:increment {
+    display: block;
+    height: 10px;
+}
+
+::-webkit-scrollbar-button:vertical:increment {
+    background-color: #fff;
+}
+
+::-webkit-scrollbar-track-piece {
+    background-color: #000;
+    -webkit-border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+    height: 50px;
+    background-color: #fff;
+    -webkit-border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+    width: 50px;
+    background-color: #ccc;
+    -webkit-border-radius: 3px;
+}
+
+/* @end */
+
+
+html {
+    height: 100%;}
+
+body {
+    font-family: "Helvetica Neue", "Lucida Grande", "Arial";
+    font-size: 13px;
+    text-align: center;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+    -moz-text-stroke: 1px rgba(255, 255, 255, 0.1);
+    color: #555;
+    background: #000 url(/img/body-bg.gif) fixed 0 0 repeat;
+    padding: 0;
+    margin: 0;
+    height: 100%;}
+
+h1, h2 {
+    font-size: 16px;
+    font-weight: :bold;
+    color: #e2e0bb;
+    margin: 25px 35px 15px;
+    text-transform: titlecase;}
+
+h1 {
+    text-shadow: 1px 2px 2px #ddd;
+    font-size: 60px;}
+
+p {
+    color: #999;}
+
+p a    {
+    color: #0AAF86;}
+
+p a:hover {
+    color: #FF6;}
+
+#wrapper {
+    width: 100%;}
+.img-active #wrapper {
+	overflow: hidden; }
+#viewer {
+	position: fixed;
+	top : 50%;
+	left: 50%;
+}
+#nav {
+	width: 200px;
+    background-color: #F2F2F2;
+	padding:20px 0;
+	position: fixed;
+	top: 50%;
+	margin-top: -150px;
+	-webkit-border-bottom-right-radius: 10px;
+	-moz-border-radius-bottomright: 10px;
+	border-bottom-right-radius: 10px;
+	-webkit-border-top-right-radius: 10px;
+	-moz-border-radius-topright: 10px;
+	border-top-right-radius: 10px; }
+	#nav ul {
+	    list-style-type: none;
+	    margin: 0px;
+	    padding: 0px; }
+		#nav ul li a {
+		    display: block;
+		    border-top: 1px solid #ccc;
+		    color: #333;
+		    font-weight: bold;
+		    text-decoration: none;
+		    cursor: pointer;
+		    padding: 11px 0px 11px 0px;}
+		#nav ul li:last-child a {
+		    border-bottom: 1px solid #ccc; }
+
+		#nav ul li a:hover {
+		    text-decoration: underline;
+		    background: #ffc;}
+
+		#nav ul li a.selected {
+		    color: #777;
+		    background: #fff;
+		    text-decoration: none;
+		    font-weight: normal; }
+
+#content {
+    color: #ccc;
+	margin-left: 210px;
+	background:#000000 none repeat scroll 0 0;
+	position: relative; }
+	a#close-viewer {
+		position: fixed;
+		top:50%; 
+		display:block;
+		width:30px;
+		height: 60px;
+		margin-top:-30px;
+		margin-left:-30px;
+		background: url(/img/closeviewer-bg.png) 0 0 no-repeat;
+		text-indent:-9999px;}
+	a#close-viewer:hover {
+		background-position: 0 -60px;
+		cursor: pointer; }
+#images {
+	width: 100%;
+	float:left; s}
+#images .image {
+    display: block;
+    overflow: hidden;
+    margin-left: 10px;
+    margin-bottom: 20px;
+    float: left;
+    height: 150px;
+ 	position: relative;}
+	#images .image a.link {
+		display:block;
+	    -webkit-border-radius: 5px;
+	    -moz-border-radius: 5px; }
+		#images .image a.link img { }
+	#images .image img.zoom {
+		display:none;
+		width: 34px;
+		height: 34px;
+		padding: 3px;
+		position: absolute;
+		left:50%;
+		top:50%;
+		margin: -20px 0 0 -20px;
+		background: rgba(0,0,0,0.6);
+	    -webkit-border-radius: 5px;
+	    -moz-border-radius: 5px; }
+	#images .image a:hover img.zoom {
+		display:block; }
+	#images .image a.lock {
+		position:absolute;
+		bottom:0px;
+		right:0px;
+		background: rgba(0,0,0,0.8);
+		padding:3px;
+		-webkit-border-top-left-radius: 3px;
+		-moz-border-radius-topleft: 3px;
+		border-top-left-radius: 3px;}
+	}	
