@@ -3,10 +3,9 @@
 Image Handler & manager, designed for use with [scrup](http://github.com/rsms/scrup) built on node.js
 
 
-# -- Very fragile, still in development
+_Very fragile, still in development_
 
 ## TODO
- * TODO:
  * Style
  * Logging (denied access to images etc.)  
  * AJAX-y navigation

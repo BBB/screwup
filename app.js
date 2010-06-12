@@ -1,23 +1,26 @@
 require.paths.unshift('./lib/express/lib');
 require.paths.unshift('./lib/mongoose');
 require.paths.unshift('./lib/imagemagick');
+require.paths.unshift('./lib');
 require.paths.unshift('./models');
 
 require('express');
 require('express/plugins');
 
 var sys = require('sys'),
-	querystring = require('querystring'),
+	querystring = require('./lib/query'),
+	imagemanager = require('imagemanager'),
 	fs = require('fs'),
+	ut = require('./lib/utils')
 	multipart = require('multipart'),
-	im = require('imagemagick'),
 	config = require('./config/config');
+
 var inspect = function(item){ sys.puts(sys.inspect(item)); }
 	
 var Mongoose = require('mongoose').Mongoose;
 Mongoose.load(__dirname + '/models/');
-var db = Mongoose.connect('mongodb://localhost/images');   	
-var Img = db.static('Image');
+db = Mongoose.connect('mongodb://localhost/images');   	
+Img = db.static('Image');
 //Img.drop();
 	
 
@@ -27,8 +30,8 @@ configure(function () {
 	use(Cookie)
 	use(Session, { expires: (12).hours , reapInterval: (2).minutes })
 	use(Flash)
-	use(Logger)
 	use(Static)
+	use(Logger)
 	set('root', __dirname);
   	set('max upload size', (5).megabytes);
 });
@@ -43,8 +46,6 @@ configure(function () {
  */
 
 // Wildcards
-/*
-*/
 get('/css/*', function(file) {	
 	sys.puts('proxying: ' + './public/css/' + file);
 	this.sendfile('./public/css/' + file);
@@ -61,97 +62,90 @@ get('/img/*', function(file) {
 
 
 // App Routing
-/*
- * POSTs MOFO
-*/
 post('/i/upload', function () {
 	var self = this,
 		query,
-		passcode = '';	
-		
-		ut = new Utils();
+		passcode = '';
 		
 	if (typeof this.url.search !== 'undefined') {
 		query = new Query(this.url.search);
 		passcode = query.getValue(config.url.keys.passcode);
 	}
-			
-	// this is baaad... not all uploads will be .png
-	var randomString = ut.randomString(40);
-	var originalName = randomString + config.images.sizeSeparator + config.images.sizes.original + '.png';
-	var smallName = randomString + config.images.sizeSeparator + config.images.sizes.small + '.png';
+	
+	// Assumes that all uploads will be .png
+	var randomstring = ut.randomstring(40);
+	var originalName = randomstring + config.images.sizeSeparator + config.images.sizes.original + '.png';
+	var smallName = randomstring + config.images.sizeSeparator + config.images.sizes.small + '.png';
 	
 	var writeStream = fs.createWriteStream(config.images.basePath + originalName);	
 	writeStream.write(self.body, encoding='binary');	
 	writeStream.end();
 					
 	
-	var link = ut.randomString(config.images.linkLength);
+	var link = ut.randomstring(config.images.linkLength);
 		
 	// TODO: check link is unique
+	//Img.find({ linkid : link }).one(function(img) {}, true);
 	
 		
-	// create a thumbnail
+	var imageDetails = { 
+		linkid: link, 
+		sizes : {
+			o : {
+				width : 0,
+				height : 0,
+				name : originalName,
+				views : 0
+			},
+			s : {
+				width : 0,
+				height : 0,
+				name : smallName,
+				views : 0
+			}
+		},
+		uploaded: new Date(), 
+		passcode: passcode 
+	};
+	
+	// Create a thumbnail
 	im.resize({
-		srcPath: config.images.basePath + originalName,
-		dstPath: config.images.basePath + smallName,
+		srcPath: config.images.basePath + imageDetails.sizes.o.name,
+		dstPath: config.images.basePath + imageDetails.sizes.s.name,
 		width: 200,
 		height: 150,
 		format: '.png'
 	}, function(err, stdout, stderr) {			
-	 	if (err) { throw err } 
-									
-		var imageDetails = { 
-			linkid: link, 
-			sizes : {
-				o : {
-					width : 0,
-					height : 0,
-					name : '',
-					views : 0
-				},
-				s : {
-					width : 0,
-					height : 0,
-					name : '',
-					views : 0
-				}
-			},
-			uploaded: new Date(), 
-			passcode: passcode 
-		};
+	 	if (err) { throw err } 		
 		
 		// Read Metadata for Original Image		
-		im.identify(config.images.basePath + originalName, function(err, features) {
+		im.identify(config.images.basePath + imageDetails.sizes.o.name, function(err, features) {
 		  	if (err) throw err
 						
-			imageDetails.sizes.o.name = originalName;
 			imageDetails.sizes.o.width = features.width;
 			imageDetails.sizes.o.height = features.height;
 					
-			// Read Metadata for Original Image		
-			im.identify(config.images.basePath + smallName, function(err, features) {
+			// Read Metadata for Small Image		
+			im.identify(config.images.basePath + imageDetails.sizes.s.name, function(err, features) {
 			  	if (err) throw err
 
-				imageDetails.sizes.s.name = smallName;
 				imageDetails.sizes.s.width = features.width;
 				imageDetails.sizes.s.height = features.height;
-
+				
 				// create a new db entry
 				var img = new Img(imageDetails);
 				// save it
 				img.save();
-
-				// respond to the POST
+				
 				self.response.writeHead(201);
 				self.response.write(config.url.base + config.url.routes.image + link + '/' + config.images.sizes.original);
-				inspect(self.response);
 				self.response.end();
 				
 			});						
 		});	
-	});
+	});	
 });
+
 post('/u/login', function(){      
 	var self = this,
 		query = '',
@@ -174,9 +168,6 @@ post('/u/login', function(){
 	return false;
 });
 
-/*
- * GETs MOFO
-*/
 get('/', function () {
 	this.redirect('/l/all')
 });
@@ -184,15 +175,12 @@ get('/', function () {
 get('/l/all', function () {
 	var self = this;
 	
-	inspect(self.url);
-	
 	if (!self.session.isAuthd) {
 		this.redirect('/u/login?' + config.url.keys.referrer + '=/l/all');
 	}
 	
-		Img.find({}).sort('uploaded', 'asc').each(function(img) {
-			
-			inspect(img)
+		Img.find({}).sort('uploaded', 'desc').each(function(img) {
+
 			if (self.session.isAuthd) {
 				this.partial(img);
 			} else if (img.passcode === null || typeof img.passcode === 'undefined' || img.passcode.length <= 0) {
@@ -213,9 +201,7 @@ get('/l/all', function () {
 			});
 		
 		});	
-	
-		
-	
+			
 });
 
 get('/l/public', function(){           
@@ -284,10 +270,8 @@ get('/i/*', function () {
 
 /* 
 	MATCHES:
-	 * /i/link
-	 * /i/link/pass
 	 * /i/link/size
-	 * /i/link/pass/size
+	 * /i/link/size/pass
 */
 		
 	var self = this,
@@ -305,7 +289,6 @@ get('/i/*', function () {
 			
 		if (img.passcode === '' || (img.passcode === passcode)) {
 						
-			inspect(img.sizes[size])
 			img.sizes[size].views++;			
 			img.save();		
 		
@@ -325,8 +308,6 @@ get('/i/*', function () {
 
 get('/i/upload', function () {
 	var self = this;
-	
-	inspect(self);
 	
 	if (!self.session.isAuthd) {
 		self.redirect('/u/login?' + config.url.keys.referrer + '=/l/public');
