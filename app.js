@@ -160,7 +160,9 @@ post('/i/upload', function () {
 				img.save();
 
 				// respond to the POST
-				self.response.writeHead(200);
+				self.response.writeHead(201);
+				self.response.write(config.url.base + config.url.routes.image + link + '/' + config.images.sizes.original);
+				inspect(self.response);
 				self.response.end();
 				
 			});						
@@ -333,6 +335,8 @@ get('/i/*', function () {
 		}
 		
     }, true);
+
+	
 		
 });	
 

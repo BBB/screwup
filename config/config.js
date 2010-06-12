@@ -6,7 +6,10 @@ exports.admin = {
 	pass: 'pss'
 }
 exports.url = {
-	baseUrl: 'http://localhost:3000/'
+	base: 'http://localhost:3000/',
+	routes: {
+		image: 'i/'
+	}
 }
 exports.url.keys = {
 	passcode: 'p',
