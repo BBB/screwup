@@ -112,7 +112,7 @@ post('/i/upload', function () {
 	im.resize({
 		srcPath: config.images.basePath + imageDetails.sizes.o.name,
 		dstPath: config.images.basePath + imageDetails.sizes.s.name,
-		width: 200,
+		width: 1000,
 		height: 150,
 		format: '.png'
 	}, function(err, stdout, stderr) {			
@@ -144,6 +144,32 @@ post('/i/upload', function () {
 			});						
 		});	
 	});	
+});
+post('/i/delete/*', function () {
+	var self = this,
+		url = this.url.pathname.split('/'),
+		id = url[3];
+			
+	if (!self.session.isAuthd) {
+		this.redirect('/u/login?' + config.url.keys.referrer + '=/l/all');
+	}
+	
+	sys.puts('deleting: ' + id)
+	
+	Img.find({ linkid : id }).one(function(img) {
+								
+			img.remove(function () {			
+				self.response.writeHead(200);
+				self.response.write('All good');
+				self.response.end();
+			});		
+		
+    }, true);
+
+	// nothing to delete
+	self.response.writeHead(400);
+	self.response.write('Image not found');
+	self.response.end();
 });
 
 post('/u/login', function(){      

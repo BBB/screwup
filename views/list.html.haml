@@ -1,9 +1,16 @@
 #images
   - each img in images
     %div{ class: (img.passcode.length > 0 ? 'private image' : 'image') }
-      %a{ href: '/i/' + img.linkid + '/o/' + img.passcode , title: 'Uploaded on ' + img.uploaded, class: 'link', style: ' width: ' + img.sizes.s.width + 'px; height:' +  img.sizes.s.height + 'px; background: url(/i/' + img.linkid + '/s/' +  img.passcode + ') 0 0 no-repeat', rel: img.sizes.o.width + ',' + img.sizes.o.height }
-        %img{ class: 'zoom', src: '/public/img/zoom.png', title: 'View Image' }
-      - if (img.passcode.length > 0)
-        %a{ href: '#', rel: img.passcode, title: img.passcode, class: 'lock' }
-          %img{ src: '/public/img/lock.png', alt: 'Private Image', title: 'Private Image' }
+      %div.wrapper{ style: ' width: ' + img.sizes.s.width + 'px; height:' +  img.sizes.s.height + 'px; background: #1e1e1e url(/i/' + img.linkid + '/s/' +  img.passcode + ') 0 0 no-repeat', rel: img.sizes.o.width + ',' + img.sizes.o.height }
+        %a.delete{ href: '/i/delete/' + img.linkid, title: 'Delete Image' }
+          %img{ src: '/public/img/delete.png', title: 'Delete Image' }
+        %a.zoom{ href: '/i/' + img.linkid + '/o/' + img.passcode , title: 'Uploaded on ' + img.uploaded }
+          %img{ src: '/public/img/zoom.png', title: 'View Image' }
+        %a.link{ href: '#', title: 'Copy Link' }
+          %img{ src: '/public/img/link.png', title: 'Copy Link' }
+        - if (img.passcode.length > 0)
+          %a{ href: '#', rel: img.passcode, title: img.passcode, class: 'lock' }
+            %img{ src: '/public/img/lock.png', alt: 'Private Image', title: 'Private Image' }
+      %div.footer{ style: 'top: ' + img.sizes.s.height + 'px;'}
+        %span=img.sizes.o.views + ' views'
       

@@ -18,6 +18,35 @@
 				});
 				//this.ImageViewer.init();
 				
+				
+				
+			    $('#images .image').each(function () {
+					var $this = $(this);
+					$this.css('top', $this.offset().top).css('left', $this.offset().left)
+					log($this.offset().left - $this.parent().offset().left)
+					//log($this.offsetLeft)
+				});
+				$('#images .image').css('position', 'absolute');
+				
+				$('#images .image a.delete').click(function (e) {
+					e.preventDefault();
+					var $this = $(this);
+					$.ajax({
+					  	type: 'POST',
+					  	url: $this.attr('href'),
+					  	data: null,
+					  	success: function (data) {
+							$this.closest('.image').fadeOut(500, function () {
+								$(this).remove();
+							});
+						},
+						error: function (err) {
+							log(err);
+						}
+					});
+				});		
+				
+				
 				callback();		
 			}		
 		}		

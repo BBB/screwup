@@ -47,7 +47,7 @@ body {
     -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
     -moz-text-stroke: 1px rgba(255, 255, 255, 0.1);
     color: #555;
-    background: #000 url(/img/body-bg.gif) fixed 0 0 repeat;
+    background: #1e1e1e url(/img/body-bg.gif) fixed 0 0 repeat-y;
     padding: 0;
     margin: 0;
     height: 100%;}
@@ -82,7 +82,7 @@ p a:hover {
 	left: 50%;
 }
 #nav {
-	width: 200px;
+	width: 50px;
     background-color: #F2F2F2;
 	padding:20px 0;
 	position: fixed;
@@ -121,9 +121,8 @@ p a:hover {
 
 #content {
     color: #ccc;
-	margin-left: 210px;
-	background:#000000 none repeat scroll 0 0;
-	position: relative; }
+	margin-left: 60px;
+	background:#000000 none repeat scroll 0 0; }
 	a#close-viewer {
 		position: fixed;
 		top:50%; 
@@ -132,27 +131,77 @@ p a:hover {
 		height: 60px;
 		margin-top:-30px;
 		margin-left:-30px;
-		background: url(/img/closeviewer-bg.png) 0 0 no-repeat;
+		background: url('/img/closeviewer-bg.png') 0 0 no-repeat;
 		text-indent:-9999px;}
 	a#close-viewer:hover {
 		background-position: 0 -60px;
 		cursor: pointer; }
 #images {
 	width: 100%;
-	float:left; s}
+	float:left;
+	background: #1e1e1e; }
 #images .image {
     display: block;
     overflow: hidden;
     margin-left: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     float: left;
-    height: 150px;
- 	position: relative;}
-	#images .image a.link {
-		display:block;
+	height: 150px;
+	border: 5px solid #1e1e1e; }	
+#images .image:hover {	
+	border: 5px solid #fff;
+	background: #fff;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+	border-radius: 5px;
+	padding-bottom: 30px;
+ 	position: absolute; 
+	z-index: 999;
+	height: auto;
+	cursor: pointer;
+	-moz-box-shadow: 0px 2px 4px rgba( 000, 000, 000, 0.5); /* FF3.5+ */
+  	-webkit-box-shadow: 0px 2px 4px rgba( 000, 000, 000, 0.5); /* Saf3.0+, Chrome */
+    box-shadow: 0px 2px 4px rgba( 000, 000, 000, 0.5); /* Opera 10.5, IE 9.0 */ }
+#images .image:hover .footer {
+	display: block; }
+	#images .image .footer {
+		display: none; 
+		background: #fff; 
+		padding: 8px 10px;
+		position:absolute;}
+		#images .image .footer span {
+			padding-left: 20px;
+			background: url('/img/eye-bg.png') 0 center no-repeat; 
+			color:#000;}
+	#images .image .wrapper  {		
+		position:relative;
 	    -webkit-border-radius: 5px;
-	    -moz-border-radius: 5px; }
-		#images .image a.link img { }
+	    -moz-border-radius: 5px;
+		border-radius: 5px; }
+		#images .image .wrapper a {
+			display:none;
+			background: rgba( 000, 000, 000, 0.7);
+		    -webkit-border-radius: 3px;
+		    -moz-border-radius: 3px;
+			border-radius: 3px;
+		 	position: absolute;
+			padding:3px 3px 1px; }
+	#images .image:hover .wrapper {
+		-webkit-border-radius: 0px;
+	    -moz-border-radius: 0px;
+		border-radius: 0px; }
+		#images .image:hover .wrapper a {
+			display:block; }
+		#images .image .wrapper a.delete {
+			top: 5px;
+			left: 5px;
+			padding: 0px 3px 0px; }
+		#images .image .wrapper a.zoom {
+			bottom: 5px;
+			right: 5px; }
+		#images .image .wrapper a.link {
+			bottom: 5px;
+			right: 30px; }
 	#images .image img.zoom {
 		display:none;
 		width: 34px;
