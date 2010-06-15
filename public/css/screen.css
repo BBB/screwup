@@ -81,43 +81,52 @@ p a:hover {
 	top : 50%;
 	left: 50%;
 }
-#nav {
-	width: 50px;
-    background-color: #F2F2F2;
-	padding:20px 0;
+#sidebar {
+	width: 30px;
 	position: fixed;
+	overflow: hidden;
 	top: 50%;
-	margin-top: -150px;
-	-webkit-border-bottom-right-radius: 10px;
-	-moz-border-radius-bottomright: 10px;
-	border-bottom-right-radius: 10px;
-	-webkit-border-top-right-radius: 10px;
-	-moz-border-radius-topright: 10px;
-	border-top-right-radius: 10px; }
-	#nav ul {
-	    list-style-type: none;
-	    margin: 0px;
-	    padding: 0px; }
-		#nav ul li a {
-		    display: block;
-		    border-top: 1px solid #ccc;
-		    color: #333;
-		    font-weight: bold;
-		    text-decoration: none;
-		    cursor: pointer;
-		    padding: 11px 0px 11px 0px;}
-		#nav ul li:last-child a {
-		    border-bottom: 1px solid #ccc; }
+	z-index: 2;
+}
+#sidebar:hover {
+	width: 205px; }
+	#nav {
+		width: 200px;
+	    background-color: #F2F2F2;
+		padding:20px 0;
+		border-top: 5px solid #1e1e1e;
+		border-right: 5px solid #1e1e1e;
+		border-bottom: 5px solid #1e1e1e;
+		-webkit-border-bottom-right-radius: 10px;
+		-moz-border-radius-bottomright: 10px;
+		border-bottom-right-radius: 10px;
+		-webkit-border-top-right-radius: 10px;
+		-moz-border-radius-topright: 10px;
+		border-top-right-radius: 10px; }
+		#nav ul {
+		    list-style-type: none;
+		    margin: 0px;
+		    padding: 0px; }
+			#nav ul li a {
+			    display: block;
+			    border-top: 1px solid #ccc;
+			    color: #333;
+			    font-weight: bold;
+			    text-decoration: none;
+			    cursor: pointer;
+			    padding: 11px 0px 11px 0px;}
+			#nav ul li:last-child a {
+			    border-bottom: 1px solid #ccc; }
 
-		#nav ul li a:hover {
-		    text-decoration: underline;
-		    background: #ffc;}
+			#nav ul li a:hover {
+			    text-decoration: underline;
+			    background: #ffc;}
 
-		#nav ul li a.selected {
-		    color: #777;
-		    background: #fff;
-		    text-decoration: none;
-		    font-weight: normal; }
+			#nav ul li a.selected {
+			    color: #777;
+			    background: #fff;
+			    text-decoration: none;
+			    font-weight: normal; }
 
 #content {
     color: #ccc;
@@ -139,15 +148,50 @@ p a:hover {
 #images {
 	width: 100%;
 	float:left;
-	background: #1e1e1e; }
+	background: #1e1e1e;
+	padding-bottom: 50px; }
 #images .image {
     display: block;
     overflow: hidden;
     margin-left: 10px;
     margin-bottom: 10px;
     float: left;
-	height: 150px;
-	border: 5px solid #1e1e1e; }	
+	border: 5px solid #1e1e1e; }
+.has-js #images .image {
+ 	position: absolute; }	
+
+#images .image.selected {
+	border-color: #2d87dd;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+	border-radius: 5px; }
+#images .image.selected:hover {
+	border-color: #2d87dd;
+	background-color: #2d87dd; 
+	padding-bottom: 0px;}	
+	#images .image.selected:hover .wrapper a.nor {
+		display:none; }
+	#images .image.selected:hover .wrapper a.sel {
+		display:block; }
+	#images .image.selected:hover .wrapper a.drag {
+		display:block; 
+		background: rgba( 000, 000, 000, 0.7);
+	    -webkit-border-radius: 3px;
+	    -moz-border-radius: 3px;
+		border-radius: 3px;
+	 	position: absolute;
+		left:50%;
+		top:50%;
+		margin: -15px 0 0 -15px;
+		padding:3px 3px 1px; }
+		#images .image.selected:hover .footer {
+			display: none; }
+	
+	#images .image.selected .wrapper {	
+			-webkit-border-radius: 0px;
+		    -moz-border-radius: 0px;
+			border-radius: 0px; }
+	
 #images .image:hover {	
 	border: 5px solid #fff;
 	background: #fff;
@@ -155,8 +199,7 @@ p a:hover {
     -moz-border-radius: 5px;
 	border-radius: 5px;
 	padding-bottom: 30px;
- 	position: absolute; 
-	z-index: 999;
+	z-index: 1;
 	height: auto;
 	cursor: pointer;
 	-moz-box-shadow: 0px 2px 4px rgba( 000, 000, 000, 0.5); /* FF3.5+ */
@@ -166,11 +209,12 @@ p a:hover {
 	display: block; }
 	#images .image .footer {
 		display: none; 
-		background: #fff; 
 		padding: 8px 10px;
-		position:absolute;}
+		position:absolute; }
 		#images .image .footer span {
 			padding-left: 20px;
+			font-size: 10px;
+			font-weight: bold;
 			background: url('/img/eye-bg.png') 0 center no-repeat; 
 			color:#000;}
 	#images .image .wrapper  {		
@@ -186,16 +230,20 @@ p a:hover {
 			border-radius: 3px;
 		 	position: absolute;
 			padding:3px 3px 1px; }
+		#images .image .wrapper a:hover {
+			background-color: rgba( 21, 255, 60, 0.7);}
 	#images .image:hover .wrapper {
 		-webkit-border-radius: 0px;
 	    -moz-border-radius: 0px;
 		border-radius: 0px; }
-		#images .image:hover .wrapper a {
+		#images .image:hover .wrapper a.nor {
 			display:block; }
 		#images .image .wrapper a.delete {
 			top: 5px;
 			left: 5px;
 			padding: 0px 3px 0px; }
+		#images .image .wrapper a.delete:hover {
+			background-color: rgba( 255, 000, 000, 0.7);}
 		#images .image .wrapper a.zoom {
 			bottom: 5px;
 			right: 5px; }

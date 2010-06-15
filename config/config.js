@@ -20,6 +20,10 @@ exports.images = {
 		small: 's',
 		original: 'o'
 	},
+	small: {
+		w: 200,
+		h:150
+	},
 	basePath : './public/uploads/img/',
 	sizeSeparator : '_',
 	linkLength : 5 // Greater than 1

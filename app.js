@@ -2,7 +2,6 @@ require.paths.unshift('./lib/express/lib');
 require.paths.unshift('./lib/mongoose');
 require.paths.unshift('./lib/imagemagick');
 require.paths.unshift('./lib');
-require.paths.unshift('./models');
 
 require('express');
 require('express/plugins');
@@ -18,7 +17,7 @@ var sys = require('sys'),
 var inspect = function(item){ sys.puts(sys.inspect(item)); }
 	
 var Mongoose = require('mongoose').Mongoose;
-Mongoose.load(__dirname + '/models/');
+Mongoose.load(__dirname + '/models/image.js');
 db = Mongoose.connect('mongodb://localhost/images');   	
 Img = db.static('Image');
 //Img.drop();
@@ -62,6 +61,13 @@ get('/img/*', function(file) {
 
 
 // App Routing
+
+get('/', function () {
+	this.redirect('/l/all')
+});
+/*
+ * /i/ is for Image
+*/
 post('/i/upload', function () {
 	var self = this,
 		query,
@@ -78,15 +84,13 @@ post('/i/upload', function () {
 	var smallName = randomstring + config.images.sizeSeparator + config.images.sizes.small + '.png';
 	
 	var writeStream = fs.createWriteStream(config.images.basePath + originalName);	
-	writeStream.write(self.body, encoding='binary');	
+	writeStream.write(self.body, encoding='binary');
 	writeStream.end();
-					
-	
+		
 	var link = ut.randomstring(config.images.linkLength);
 		
 	// TODO: check link is unique
-	//Img.find({ linkid : link }).one(function(img) {}, true);
-	
+	//Img.find({ linkid : link }).one(function(img) {}, true);	
 		
 	var imageDetails = { 
 		linkid: link, 
@@ -112,8 +116,8 @@ post('/i/upload', function () {
 	im.resize({
 		srcPath: config.images.basePath + imageDetails.sizes.o.name,
 		dstPath: config.images.basePath + imageDetails.sizes.s.name,
-		width: 1000,
-		height: 150,
+		width: config.images.small.w,
+		height: config.images.small.h,
 		format: '.png'
 	}, function(err, stdout, stderr) {			
 	 	if (err) { throw err } 		
@@ -145,6 +149,64 @@ post('/i/upload', function () {
 		});	
 	});	
 });
+
+get('/i/*', function () {	
+
+/* 
+	MATCHES:
+	 * /i/link/size
+	 * /i/link/size/pass
+*/
+		
+	var self = this,
+		url = this.url.pathname.split('/'),
+		id = url[2],
+		size = url[3],
+		passcode;
+	
+		
+	if (url.length > 4) { // we have a passcode
+		passcode = url[4];
+	}
+		
+	Img.find({ linkid : id }).one(function(img) {
+			
+		if (img.passcode === '' || (img.passcode === passcode)) {
+						
+			img.sizes[size].views++;			
+			img.save();		
+		
+			self.sendfile(config.images.basePath +  img.sizes[size].name);	
+			
+		} else {	
+					
+			self.redirect('/');
+			
+		}
+		
+    }, true);
+
+	
+		
+});	
+
+get('/i/upload', function () {
+	var self = this;
+	
+	if (!self.session.isAuthd) {
+		self.redirect('/u/login?' + config.url.keys.referrer + '=/l/public');
+	}
+
+	self.render('upload.html.haml', {
+	    locals: {
+	      	title: 'Upload',
+			debugmode: config.app.debugmode,
+			currentpath: self.url.pathname,
+			isAuthd: self.session.isAuthd
+	    }
+	});
+});
+
 post('/i/delete/*', function () {
 	var self = this,
 		url = this.url.pathname.split('/'),
@@ -167,11 +229,14 @@ post('/i/delete/*', function () {
     }, true);
 
 	// nothing to delete
-	self.response.writeHead(400);
-	self.response.write('Image not found');
-	self.response.end();
+	//self.response.writeHead(400);
+	//self.response.write('Image not found');
+	//self.response.end();
 });
 
+/*
+ * /u/ is for User
+*/
 post('/u/login', function(){      
 	var self = this,
 		query = '',
@@ -194,9 +259,32 @@ post('/u/login', function(){
 	return false;
 });
 
-get('/', function () {
-	this.redirect('/l/all')
+get('/u/login', function () {    
+	       
+   	var self = this;
+	
+	self.render('login.html.haml', {
+		layout: false,
+	    locals: {
+	      	title: 'Login',
+			debugmode: config.app.debugmode,
+			currentpath: self.url.pathname,
+			isAuthd: self.session.isAuthd
+	    }
+	});
+	
 });
+
+get('/u/logout', function () {
+
+	this.session.isAuthd = false;	
+	this.redirect('/');
+	
+});
+
+/*
+ * /l/ is for List
+*/
 
 get('/l/all', function () {
 	var self = this;
@@ -292,62 +380,6 @@ get('/l/private', function(){
 	                      
 });
 
-get('/i/*', function () {	
-
-/* 
-	MATCHES:
-	 * /i/link/size
-	 * /i/link/size/pass
-*/
-		
-	var self = this,
-		url = this.url.pathname.split('/'),
-		id = url[2],
-		size = url[3],
-		passcode;
-	
-		
-	if (url.length > 4) { // we have a passcode
-		passcode = url[4];
-	}
-		
-	Img.find({ linkid : id }).one(function(img) {
-			
-		if (img.passcode === '' || (img.passcode === passcode)) {
-						
-			img.sizes[size].views++;			
-			img.save();		
-		
-			self.sendfile(config.images.basePath +  img.sizes[size].name);	
-			
-		} else {	
-					
-			self.redirect('/');
-			
-		}
-		
-    }, true);
-
-	
-		
-});	
-
-get('/i/upload', function () {
-	var self = this;
-	
-	if (!self.session.isAuthd) {
-		self.redirect('/u/login?' + config.url.keys.referrer + '=/l/public');
-	}
-
-	self.render('upload.html.haml', {
-	    locals: {
-	      	title: 'Upload',
-			debugmode: config.app.debugmode,
-			currentpath: self.url.pathname,
-			isAuthd: self.session.isAuthd
-	    }
-	});
-});
 
 get('/g/*', function () {
 });
@@ -357,32 +389,5 @@ get('/e/*', function () {
 });
 
 	
-	
-
-// User
-get('/u/login', function () {    
-	       
-   	var self = this;
-	
-	self.render('login.html.haml', {
-		layout: false,
-	    locals: {
-	      	title: 'Login',
-			debugmode: config.app.debugmode,
-			currentpath: self.url.pathname,
-			isAuthd: self.session.isAuthd
-	    }
-	});
-	
-});
-get('/u/logout', function () {
-
-	this.session.isAuthd = false;
-	
-	this.redirect('/');
-	
-});
-
-
 
 run();
