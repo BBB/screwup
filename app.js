@@ -150,45 +150,36 @@ post('/i/upload', function () {
 	});	
 });
 
-get('/i/*', function () {	
-
-/* 
+var fetchImage = function (id, size, pass) {
+	/* 
 	MATCHES:
 	 * /i/link/size
 	 * /i/link/size/pass
-*/
+	*/
+	sys.puts(id)
 		
-	var self = this,
-		url = this.url.pathname.split('/'),
-		id = url[2],
-		size = url[3],
-		passcode;
+	var self = this;
 	
-		
-	if (url.length > 4) { // we have a passcode
-		passcode = url[4];
-	}
-		
 	Img.find({ linkid : id }).one(function(img) {
-			
-		if (img.passcode === '' || (img.passcode === passcode)) {
-						
+		
+		if (img.passcode === '' || (img.passcode === pass)) {
+					
 			img.sizes[size].views++;			
 			img.save();		
-		
-			self.sendfile(config.images.basePath +  img.sizes[size].name);	
-			
-		} else {	
-					
-			self.redirect('/');
-			
-		}
-		
-    }, true);
-
 	
+			self.sendfile(config.images.basePath +  img.sizes[size].name);	
 		
-});	
+		} else {	
+				
+			self.redirect('/');
+		
+		}
+	
+	}, true);
+}
+
+get('/i/:id/:size/:pass', fetchImage);
+get('/i/:id/:size/', fetchImage);
 
 get('/i/upload', function () {
 	var self = this;
@@ -207,10 +198,8 @@ get('/i/upload', function () {
 	});
 });
 
-post('/i/delete/*', function () {
-	var self = this,
-		url = this.url.pathname.split('/'),
-		id = url[3];
+post('/i/delete/:id', function (id) {
+	var self = this;
 			
 	if (!self.session.isAuthd) {
 		this.redirect('/u/login?' + config.url.keys.referrer + '=/l/all');
@@ -381,9 +370,9 @@ get('/l/private', function(){
 });
 
 
-get('/g/*', function () {
+get('/g/:id', function (id) {
 });
-get('/e/*', function () {
+get('/e/:code', function (code) {
 	// error
 	
 });
