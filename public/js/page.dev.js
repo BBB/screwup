@@ -15,6 +15,16 @@
 					    itemSelector: '.image' 
 					});*/
 				});
+				if ("WebSocket" in window) {
+				  var ws = new WebSocket('ws://localhost:3000/');
+				  ws.onopen = function() {
+					log('ws connected')
+				    ws.send("message to send");
+				  };
+				  ws.onmessage = function (evt) { var received_msg = evt.data; };
+				  ws.onclose = function() { 
+				 };
+				}
 				this.ImageShuffle.init();	
 				this.ImageSelector.init();			
 				callback();		

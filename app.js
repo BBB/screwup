@@ -62,8 +62,9 @@ get('/img/*', function(file) {
 
 // App Routing
 
-get('/', function () {
-	this.redirect('/l/all')
+get('/', function (data) {
+	sys.puts(data);
+	//this.redirect('/l/all')
 });
 /*
  * /i/ is for Image
@@ -153,11 +154,10 @@ post('/i/upload', function () {
 var fetchImage = function (id, size, pass) {
 	/* 
 	MATCHES:
-	 * /i/link/size
+	 * /i/link/size/
 	 * /i/link/size/pass
 	*/
-	sys.puts(id)
-		
+			
 	var self = this;
 	
 	Img.find({ linkid : id }).one(function(img) {
