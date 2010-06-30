@@ -1,77 +1,24 @@
 (jQuery)(function($){ 
-	var ScrewUp = (function () {	
+	var screwUp = (function () {	
 		return {
 			init : function (callback) {
-				if (callback === undefined) callback = function () {};
+				callback = callback || function(){};
 				$('html').removeClass('no-js').addClass('has-js');
 				
 				$('#sidebar').css({'margin-top' : -($('#nav').height() + 40)/2 });
 				
 				log('SCREWUP init');
 				
-			    $('#images img:last').load(function () {
-			   	 	/*$('#images').masonry({
-					    columnWidth: 5, 
-					    itemSelector: '.image' 
-					});*/
-				});
-				if ("WebSocket" in window) {
-				  var ws = new WebSocket('ws://localhost:3000/');
-				  ws.onopen = function() {
-					log('ws connected')
-				    ws.send("message to send");
-				  };
-				  ws.onmessage = function (evt) { var received_msg = evt.data; };
-				  ws.onclose = function() { 
-				 };
-				}
-				this.ImageShuffle.init();	
-				this.ImageSelector.init();			
+				$('#images img').imagesLoaded(this.imageShuffle.init)
+											
 				callback();		
 			}		
 		}		
 	})();
-	
-	ScrewUp.ImageSelector = (function () {
-		var shiftpressed = false;
-		var evts = {
-			startselection : function (e) {
-				var $this = $(this)
-				$this.addClass('selected')
-				if (shiftpressed) {
-					
-				}
-			},
-			endselection : function (e) {
-				var $this = $(this)
-				$('.image.selected').removeClass('selected')
-				if (shiftpressed) {
-
-				}
-			}
-		}
 		
-		return {
-			init : function (callback) {
-				if (callback === undefined) callback = function () {};
-				var self = this;
-				
-				$(document).keypress(function (e) {
-				  	if(e.shiftKey) {
-				    	shiftpressed = true;
-				  	}
-				}).keyup(function(event){
-				   	shiftpressed = false;
-				});
-				
-				$('body').live('mouseup', evts.endselection);
-				$('div#images .image').live('mousedown', evts.startselection);
-			}
-		}
-	})();
-	
-	ScrewUp.ImageShuffle = (function () {
-		var $images;
+	screwUp.imageShuffle = (function () {
+		var $images,
+			$container = $('div#content #images');
 
 		var config = {
 			baseLeft : 70,
@@ -79,66 +26,69 @@
 			margin : 12,
 			debug : true
 		}
+		
 		var process = function (selector) {
 			$images = $(selector),
 				rowwidth = 0,
 				futurerowwidth = 0,
 				row = 0,
 				col = 0,
-				images = [['']],
-				newrow = false;
+				images = [['']];
+				
 			
 		   	for (var i = 0; i < $images.length; i++) {
 				var $this = $($images[i]),
 					w = parseInt($this.width(), 10),
 					h = parseInt($this.height(), 10);
+					
 				futurerowwidth = rowwidth + w + config.margin;
-				if (futurerowwidth >= config.mxrowwidth) {
-					newrow = true
-				} else {			
-					$this.css({ 'width': w, 'height': h });
-					images[row][col] = $this;
-					rowwidth = futurerowwidth;
-				}
 				
-				if (newrow) { // lets run through this image again, but on a new row	
-					newrow = false;
+				if (futurerowwidth >= config.mxrowwidth) {
+					// New row please
 					rowwidth = 0;
 					futurerowwidth = 0;
 					row++;	
 					i--;			
 					col = 0;
 					images[row] = [];
-				} else {				
+				} else {			
+					$this.css({ 'width': w, 'height': h });
+					images[row][col] = $this;
+					rowwidth = futurerowwidth;
 					col++;
-				}		
+				}	
 			}
 			
 			return images;
 			
 		}
 		
-		var layout = function (images, animate) {
-			var left = 0;
-			var top = 0;
-			var highest = 0;
+		var layout = function (images, speed) {
+			var left = 0,
+				top = 0,
+				highest = 0;
+				
 			for (var r = 0; r < images.length; r++) {
+				
 				left = config.baseLeft;
 				top += highest + config.margin;
+				
 				for (var c = 0; c < images[r].length; c++) {
-					var $img = images[r][c];
-					var w = parseInt($img.css('width').replace(/px/, ''), 10);
-					var h = parseInt($img.css('height').replace(/px/, ''), 10);
+					var $img = images[r][c],
+						w = parseInt($img.css('width').replace(/px/, ''), 10),
+						h = parseInt($img.css('height').replace(/px/, ''), 10),
+						css = { 'position': 'absolute', 'top': top, 'left': left };
+						
 					highest = (h > highest ? h : highest)
-					var css = { 'position': 'absolute', 'top': top, 'left': left };
-					if (animate) {
-						$img.animate(css, 300);
-					} else {
-						$('div#content #images').append($img.css(css));
-					}
+					
+					$img.animate(css, speed);
+					
 					left += w + config.margin;
+					
 				}
+				
 			}
+			
 		};
 		
 		var evts = {
@@ -198,28 +148,22 @@
 		}
 		return {
 			init : function (callback) {
-				if (callback === undefined) callback = function () {};
+				callback = callback || function(){};
 				var self = this;
 				
 				config.mxrowwidth = $(window).width() - 80;
 									
-				var images = process('div#images div.image');	
-				$('div#images div.image').remove();
-				layout(images, false);
 				var $add = $('<a href="#" id="add">add</a>').appendTo('#nav');
 				$('#nav #add').live('click',evts.addImage);
 				$('a.delete', $images).live('click',evts.deleteImage);
 				
-
-				var resizeTimer = null;
-				$(window).bind('resize', function() {
-				    if (resizeTimer) clearTimeout(resizeTimer);
-				    resizeTimer = setTimeout(function () {	
-						config.mxrowwidth = $(window).width() - 80;
-						var images = process('div#images div.image');	
-						layout(images, true);
-					}, 100);
+				$(window).bind("smartresize", function (e) {
+				    config.mxrowwidth = $(window).width() - 80;
+					var images = process('div#images div.image');	
+					layout(images, 500);
 				});
+				
+				$(window).trigger("smartresize", ["execAsap"]);
 				
 				callback();
 			}
@@ -227,7 +171,7 @@
 	})();
 	
 	// init the app
-	ScrewUp.init(function () {
+	screwUp.init(function () {
 		log('all loaded');
 	});
 });

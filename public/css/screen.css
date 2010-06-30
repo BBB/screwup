@@ -46,6 +46,9 @@ body {
     text-align: center;
     -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
     -moz-text-stroke: 1px rgba(255, 255, 255, 0.1);
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
     color: #555;
     background: #1e1e1e url(/img/body-bg.gif) fixed 0 0 repeat-y;
     padding: 0;
@@ -156,15 +159,16 @@ p a:hover {
     margin-left: 10px;
     margin-bottom: 10px;
     float: left;
-	border: 5px solid #1e1e1e; }
+	border: 5px solid rgba(000,000,000, 0);
+	-webkit-transition: all 0.12s ease-out; }
 .has-js #images .image {
- 	position: absolute; }	
-
+ 	position: absolute; }
 #images .image.selected {
 	border-color: #2d87dd;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
-	border-radius: 5px; }
+	border-radius: 5px;
+	z-index: 99999; }
 #images .image.selected:hover {
 	border-color: #2d87dd;
 	background-color: #2d87dd; 
@@ -273,4 +277,26 @@ p a:hover {
 		-webkit-border-top-left-radius: 3px;
 		-moz-border-radius-topleft: 3px;
 		border-top-left-radius: 3px;}
-	}	
+	
+div#groups {
+	width: 150px;
+	height: 100%;
+	background: #000;
+	position: fixed;
+	top: 0px;
+	right: -50px;
+	z-index: 99;
+	overflow-y: scroll;
+	padding-bottom:  10px; }
+	div#groups .group {
+		float: left;
+		clear: left;
+		margin: 10px 20px 0px;
+		}
+		div#groups .group span.thumb {
+			display: block;			
+			border: 5px solid #1e1e1e;
+			
+			width: 50px;
+			height: 50px;
+			}

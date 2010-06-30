@@ -7,7 +7,6 @@ require('express');
 require('express/plugins');
 
 var sys = require('sys'),
-	querystring = require('./lib/query'),
 	imagemanager = require('imagemanager'),
 	fs = require('fs'),
 	ut = require('./lib/utils')
@@ -45,15 +44,15 @@ configure(function () {
  */
 
 // Wildcards
-get('/css/*', function(file) {	
+get('/css/:file', function(file) {	
 	sys.puts('proxying: ' + './public/css/' + file);
 	this.sendfile('./public/css/' + file);
 });
-get('/js/*', function(file) {	
+get('/js/:file', function(file) {	
 	sys.puts('proxying: ' + './public/js/' + file);
 	this.sendfile('./public/js/' +  file);
 });
-get('/img/*', function(file) {	
+get('/img/:file', function(file) {	
 	sys.puts('proxying: ' + './public/img/' + file);
 	this.sendfile('./public/img/' +  file);
 });
@@ -61,28 +60,24 @@ get('/img/*', function(file) {
 
 
 // App Routing
-
-get('/', function (data) {
-	sys.puts(data);
-	//this.redirect('/l/all')
+get('/', function () {
+	this.redirect('/l/all')
 });
+
 /*
  * /i/ is for Image
 */
-post('/i/upload', function () {
+var uploadImage = function (passcode) {
 	var self = this,
 		query,
-		passcode = '';
-		
-	if (typeof this.url.search !== 'undefined') {
-		query = new Query(this.url.search);
-		passcode = query.getValue(config.url.keys.passcode);
-	}
-	
+		passcode = passcode || '';
+			
 	// Assumes that all uploads will be .png
 	var randomstring = ut.randomstring(40);
 	var originalName = randomstring + config.images.sizeSeparator + config.images.sizes.original + '.png';
 	var smallName = randomstring + config.images.sizeSeparator + config.images.sizes.small + '.png';
+	
+	var contentLength = parseInt(self.headers['content-length'], 10);
 	
 	var writeStream = fs.createWriteStream(config.images.basePath + originalName);	
 	writeStream.write(self.body, encoding='binary');
@@ -149,7 +144,10 @@ post('/i/upload', function () {
 			});						
 		});	
 	});	
-});
+};
+post('/i/upload/:pass', uploadImage);
+post('/i/upload', uploadImage);
+
 
 var fetchImage = function (id, size, pass) {
 	/* 
@@ -236,10 +234,6 @@ post('/u/login', function(){
 	if (typeof user !== 'undefined' && typeof pass !== 'undefined') {
 		
 		if (user == config.admin.user && pass == config.admin.pass) {
-			if (typeof this.url.search !== 'undefined') {
-				query = new Query(this.url.search);
-				referrer = query.getValue(config.url.keys.referrer);
-			}
 			self.session.isAuthd = true;
 				
 			self.redirect(referrer);         

@@ -12,7 +12,6 @@ exports.url = {
 	}
 }
 exports.url.keys = {
-	passcode: 'p',
 	referrer: 'r'
 }	
 exports.images = {
