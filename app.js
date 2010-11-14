@@ -38,6 +38,7 @@ app.configure('production', function () {
 });
 
 // Models
+
 document('User')
 	.oid('_id')
 	.string('username')
@@ -76,14 +77,9 @@ document('Image')
 	.string('passcode')
 	.boolean('deleted')
 	
-
 var Image = mongoose.Image;
 
-
-
-
 // Errors
-
 function NotFound(path){
   	this.name = 'NotFound';
   	if (path) {
@@ -95,18 +91,21 @@ function NotFound(path){
 	Error.captureStackTrace(this, arguments.callee);
 }
 sys.inherits(NotFound, Error);
+
 function NotLoggedIn(page){
     this.name = 'NotLoggedIn';
     Error.call(this, 'Not logged in (' + msg + ')');
     Error.captureStackTrace(this, arguments.callee);
 }
 sys.inherits(NotLoggedIn, Error);
+
 function IncorrectAccessLevel(user, page){
     this.name = 'IncorrectAccessLevel';
     Error.call(this, 'Access level incorrect for: ' + page + ' (' + user + ')');
     Error.captureStackTrace(this, arguments.callee);
 }
 sys.inherits(IncorrectAccessLevel, Error);
+
 function IncorrectPassword(msg){
     this.name = 'IncorrectPassword';
     Error.call(this, msg);
@@ -161,29 +160,29 @@ var UserAuth = {
  */
  
  
- // Wildcards
- app.get('/css/:file', function(req, res) {	
- 	var file = req.params.file; 
- 	console.log('proxying: ' + './public/css/' + file);
- 	res.sendfile('./public/css/' + file);
- });
- app.get('/js/:file', function(req, res) {	
- 	var file = req.params.file; 
- 	console.log('proxying: ' + './public/js/' + file);
- 	res.sendfile('./public/js/' +  file);
- });
- app.get('/img/:file', function(req, res) {	
- 	var file = req.params.file; 
- 	console.log('proxying: ' + './public/img/' + file);
- 	res.sendfile('./public/img/' +  file);
- });
+// Wildcards
+app.get('/css/:file', function(req, res) {	
+	var file = req.params.file; 
+	console.log('proxying: ' + './public/css/' + file);
+	res.sendfile('./public/css/' + file);
+});
+
+app.get('/js/:file', function(req, res) {	
+	var file = req.params.file; 
+	console.log('proxying: ' + './public/js/' + file);
+	res.sendfile('./public/js/' +  file);
+});
+
+app.get('/img/:file', function(req, res) {	
+	var file = req.params.file; 
+	console.log('proxying: ' + './public/img/' + file);
+	res.sendfile('./public/img/' +  file);
+});
+ 
+
+// Root
 
 app.get('/', function(req, res) {
-
-
-	
-	
-	
 
 	console.log('User is logged in: ' + (UserAuth.IsLoggedIn(req) ? 'true' : 'false'));
 	
@@ -206,47 +205,28 @@ app.get('/', function(req, res) {
  
 app.get('/l/all', function (req, res) {
 	
-	if ( 1 != 1) {//!UserAuth.IsLoggedIn(req)) {
+	if (!UserAuth.IsLoggedIn(req)) {
+	
 		res.redirect('/u/login');
+		
 	} else {
-//		Image.find('sizes.o.views', '1').first(function(err, img){
-//			console.log('Image: ' + img);
-//		});
-		Image.all(function(err, docs){
+	
+		//TODO: Add userid to UserAuth Object
+		Image.find({ userid: UserAuth.UserId }).sort('uploaded', 'desc').all(function(err, docs){
 		  
-		  console.log("Error: " + err);  
-		  console.log("Image: " + docs.length);  
-		  
-		  
-		  
-		  res.render('images', {
-		    locals: {
-		      title: 'All',
-		      images: imgarr
-		    }
-		  });	
-		  
-		});
-		
-		/*
-		
-		Img.find({ userid: self.session.user._id  }).sort('uploaded', 'desc').each(function(img) {
-		
-			this.partial(img);
+			console.log("Error: " + err);  
+			console.log("Image: " + docs.length);   
 			
-		}).then(function(imgs){
-			self.render('list.jade', {
-			    locals: {
-			      	title: 'List: All Images',
-					isAuthd: self.session.isAuthd,
-					debugmode: config.app.debugmode,
-					currentpath: self.url.pathname,
-					images: imgs,
-					basepath:  config.images.basePath
-			    }
-			});
+			
+			res.render('images', {
+				locals: {
+				  title: 'All Images',
+				  images: docs
+				}
+			});	
+		  
 		});
-		*/
+		
 	}
 			
 });
@@ -299,7 +279,7 @@ app.get('/u/edit/:username', function (req, res) {
 		
 			if (typeof doc != 'undefined') {
 						      	
-				res.render('edit-user', {
+				res.render('admin/edit-user', {
 				  locals: {
 				    title: 'Edit User',
 				    user: doc
@@ -318,11 +298,11 @@ app.get('/u/edit/:username', function (req, res) {
 	}
 });
 
-app.post('/u/edit/:username', function (req, res) { 
+app.post('/u/edit/', function (req, res) { 
  
-	console.log('Saving user: ' + req.params.username);  
+	console.log('Saving/ Creating user: ' + req.body.user.name);  
 	
-	if (typeof req.params.username != 'undefined') { 
+	if (typeof req.body.user.name != 'undefined') { 
 	
 		if (!req.body || !req.body.user || !req.body.user.name || !req.body.user.password || !req.body.user.email) {
 		
@@ -331,11 +311,11 @@ app.post('/u/edit/:username', function (req, res) {
 		} else {
 			
 			// TODO: Some big ole security holes to be filled
-			User.find({ username : req.params.username }).one(function(err, doc) {
-			
-				console.log(err, doc);
-			
+			User.find({ username : req.body.user.name }).one(function(err, doc) {
+						
 				if (typeof doc  != "undefined") {
+				
+					console.log('Editing');
 				
 					doc.username = req.body.user.name;
 					doc.password = req.body.user.password;
@@ -343,7 +323,7 @@ app.post('/u/edit/:username', function (req, res) {
 					
 					doc.save(function (err) {
 						if (err) { 
-							console.log('Error saving user: ' + user + ' - ' + err);
+							console.log('Error saving user: ' + req.body.user.name + ' - ' + err);
 						}
 						
 						res.redirect('/a/');
@@ -351,11 +331,26 @@ app.post('/u/edit/:username', function (req, res) {
 					
 					
 				} else {
-					//TODO: Raise error
-					console.log('No user with username: ' + req.params.username);				
 				
+					console.log('Creating');
+				
+					// create a new db entry
+					var user = new User({
+						username : req.body.user.name,
+						password : req.body.user.password,
+						email : req.body.user.email,
+						joined : new Date(),
+						lastlogin : new Date(),
+						role : 'NORMAL'
+					});
 					
-					res.redirect('/a/');
+					user.save(function (err) {
+						if (err) { 
+							console.log('Error creating user: ' + req.body.user.name + ' - ' + err);
+						}
+						
+						res.redirect('/a/');
+					});
 				
 				}
 				
@@ -365,51 +360,6 @@ app.post('/u/edit/:username', function (req, res) {
 		}
 		
 	}	
-});
-app.post('/u/create', function (req, res) {      
-
-	console.log('lets save this biatch: ' + req.body.user );
-
-	if (!req.body || !req.body.user || !req.body.user.name || !req.body.user.password || !req.body.user.email) {
-	
-		console.log('HAXX');
-		res.redirect('back');
-		
-	} else {
-		
-		User.find({ username : req.body.user.name }).one(function(err, doc) {
-		
-			console.log(err, doc);
-		
-			if (typeof doc  == "undefined") {
-			
-				// create a new db entry
-				var user = new User({
-					username : req.body.user.name,
-					password : req.body.user.password,
-					email : req.body.user.email,
-					joined : new Date(),
-					lastlogin : new Date(),
-					role : 'NORMAL'
-				});
-				
-				user.save(function (err) {
-					if (err) { 
-						console.log('Error saving user: ' + user + ' - ' + err);
-					}
-					
-					res.redirect('back');
-				});
-				
-			} else {
-			
-				// TODO: throw error
-				console.log('user already exists');
-				res.redirect('back');
-			}
-		}, true);
-	
-	}
 });
 
 app.post('/u/login', function (req, res) {     	  
@@ -455,13 +405,16 @@ app.post('/u/login', function (req, res) {
 	}
 });
 
-app.get('/u/login', function (req, res) {    	      	
+app.get('/u/login', function (req, res) {  
+  	      	
 	res.render('login', {
 	  locals: {
 	    title: 'Login'
 	  }
 	});	
+	
 });
+
 
 app.get('/u/logout', function () {
 	
@@ -474,13 +427,16 @@ app.get('/u/logout', function () {
 app.get('/a/', function (req, res) {
 	
 	User.all(function(err, docs) {
+	
 		console.log(docs);
-		res.render('admin', {
-		  locals: {
-		    title: 'Admin',
-		    users: docs
-		  }
+		
+		res.render('admin/admin', {
+			locals: {
+				title: 'Admin',
+				users: docs
+			}
 		});	
+		
 	});
 });
 

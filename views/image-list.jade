@@ -1,3 +1,3 @@
-#images
-  -partial('image-thumbnail', { collection: images });
-      
+- if (images.length)
+  h1 Images
+  #images!= partial('image-list-item', { collection: images, as: 'image' })
