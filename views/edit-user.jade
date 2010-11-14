@@ -1,0 +1,14 @@
+#form.admin
+  h2 Edit User
+  form( method: 'post', action: '/u/edit/' + user.username )
+    div
+      label( for: 'username') username
+      input( type: 'text', name: 'user[name]', id: 'username', value : user.username )
+    div
+      label( for: 'email') email
+      input( type: 'text', name: 'user[email]', id: 'email', value : user.email )
+    div
+      label( for: 'password')  password
+      input( type: 'text', name: 'user[password]', id: 'password', value : user.password )
+    div.buttons
+      input( type: 'submit', value: 'Save Changes' )
