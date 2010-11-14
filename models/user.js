@@ -1,0 +1,9 @@
+document('User')
+	.oid('_id')
+	.string('username')
+	.string('password')
+	.string('email')
+	.date('joined')
+	.date('lastlogin')
+	.string('role')
+	.boolean('deleted');

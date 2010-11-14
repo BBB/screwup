@@ -21,7 +21,7 @@ exports.images = {
 	},
 	small: {
 		w: 200,
-		h:150
+		h: 150
 	},
 	basePath : './public/uploads/img/',
 	sizeSeparator : '_',

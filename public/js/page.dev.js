@@ -3,19 +3,47 @@
 		return {
 			init : function (callback) {
 				callback = callback || function(){};
+				var self = this;
 				$('html').removeClass('no-js').addClass('has-js');
 				
 				$('#sidebar').css({'margin-top' : -($('#nav').height() + 40)/2 });
 				
 				log('SCREWUP init');
 				
-				$('#images img').imagesLoaded(this.imageShuffle.init)
+				$('#images img').imagesLoaded(function () {
+					self.imageShuffle.init();
+					self.imageViewer.init();
+				});
 											
 				callback();		
 			}		
 		}		
-	})();
+	})();	
+
+	screwUp.imageViewer = (function () {
+		var self;
 		
+		var evts = {
+			showImage : function (e) {
+				
+				screwUp.imageViewer.pause();
+				$('#images div.image').hide()
+				return false;
+			}
+		}
+
+		return {
+			init : function (callback) {
+				callback = callback || function(){};
+				self = this;
+				log('woo')
+				$('#images div.image a.zoom').click(evts.showImage)
+
+				callback();
+			}
+		}		
+	})();	
+	
 	screwUp.imageShuffle = (function () {
 		var $images,
 			$container = $('div#content #images');
@@ -77,12 +105,13 @@
 					var $img = images[r][c],
 						w = parseInt($img.css('width').replace(/px/, ''), 10),
 						h = parseInt($img.css('height').replace(/px/, ''), 10),
-						css = { 'position': 'absolute', 'top': top, 'left': left };
+						css = { 'position': 'absolute', 'top': top, 'left': left, '-webkit-transform': 'rotate(360deg)' };
 						
 					highest = (h > highest ? h : highest)
 					
-					$img.animate(css, speed);
-					
+					//$img.animate(css, speed);
+					$img.css(css);
+										
 					left += w + config.margin;
 					
 				}
@@ -165,10 +194,16 @@
 				
 				$(window).trigger("smartresize", ["execAsap"]);
 				
-				callback();
+				//callback();
+			},
+			pause : function () {
+				
+			},
+			resume : function () {
+				
 			}
 		}
-	})();
+	})();	
 	
 	// init the app
 	screwUp.init(function () {

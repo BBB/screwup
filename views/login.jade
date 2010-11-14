@@ -1,0 +1,11 @@
+#login
+  p Login
+  form( method='post', action='/u/login' )
+    div
+      label( for='username') Username:
+      input#username( type='text', name='user[name]' )
+    div
+      label( for='password') Password:
+      input#password( type='password', name='user[password]' )
+    div.buttons
+      input( type='submit', value='Login' )

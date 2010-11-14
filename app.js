@@ -1,376 +1,266 @@
-require.paths.unshift('./lib/express/lib');
-require.paths.unshift('./lib/mongoose');
-require.paths.unshift('./lib/imagemagick');
-require.paths.unshift('./lib');
+/**
+ * Module dependencies.
+ */
+ 
+var mongoose = require('./vendor/mongoose/lib/mongoose'), 
+	document = mongoose.define;
+ 
+var db = mongoose.connect('mongodb://localhost/mongoose');
 
-require('express');
-require('express/plugins');
+var express = require('express'),
+    sys = require('sys');
 
-var sys = require('sys'),
-	imagemanager = require('imagemanager'),
-	fs = require('fs'),
-	ut = require('./lib/utils')
-	multipart = require('multipart'),
-	config = require('./config/config');
+var app = module.exports = express.createServer(
+		express.logger(),
+	    express.cookieDecoder(),
+	    express.session()
+    );
 
-var inspect = function(item){ sys.puts(sys.inspect(item)); }
-	
-var Mongoose = require('mongoose').Mongoose;
-Mongoose.load(__dirname + '/models/image.js');
-db = Mongoose.connect('mongodb://localhost/images');   	
-Img = db.static('Image');
-//Img.drop();
+
 	
 
-configure(function () {	
-	use(MethodOverride)
-	use(ContentLength)
-	use(Cookie)
-	use(Session, { expires: (12).hours , reapInterval: (2).minutes })
-	use(Flash)
-	use(Static)
-	use(Logger)
-	set('root', __dirname);
-  	set('max upload size', (5).megabytes);
+// Configuration
+
+app.configure(function(){
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'jade');
+  app.use(express.bodyDecoder());
+  app.use(express.methodOverride());
+  app.use(app.router);
+  app.use(express.staticProvider(__dirname + '/public'));
 });
+
+app.configure('development', function(){
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
+});
+
+app.configure('production', function(){
+  app.use(express.errorHandler()); 
+});
+
+// Errors
+
+function NotFound(path){
+  	this.name = 'NotFound';
+  	if (path) {
+      	Error.call(this, 'Cannot find ' + path);
+    	this.path = path;
+  	} else {
+    	Error.call(this, 'Not Found');
+  	}
+	Error.captureStackTrace(this, arguments.callee);
+}
+sys.inherits(NotFound, Error);
+function NotLoggedIn(page){
+    this.name = 'NotLoggedIn';
+    Error.call(this, 'Not logged in (' + msg + ')');
+    Error.captureStackTrace(this, arguments.callee);
+}
+sys.inherits(NotLoggedIn, Error);
+function IncorrectAccessLevel(user, page){
+    this.name = 'IncorrectAccessLevel';
+    Error.call(this, 'Access level incorrect for: ' + page + ' (' + user + ')');
+    Error.captureStackTrace(this, arguments.callee);
+}
+sys.inherits(IncorrectAccessLevel, Error);
+function IncorrectPassword(msg){
+    this.name = 'IncorrectPassword';
+    Error.call(this, msg);
+    Error.captureStackTrace(this, arguments.callee);
+}
+sys.inherits(IncorrectPassword, Error);
+
+app.error(function(err, req, res, next){
+    if (err instanceof NotFound) {
+        res.render('404.jade', {
+            status: 404,
+            locals: {
+                error: err
+            }
+        });
+        
+    } else if (err instanceof NotLoggedIn) {
+    
+    } else if (err instanceof IncorrectAccessLevel) {
+    
+    } else if (err instanceof IncorrectPassword) {
+    
+    } else {
+        next(err);
+    }
+});
+
+// User Auth
+var User = {
+	Login : function (req) {
+		req.session.user = {};
+		req.session.user.loggedIn = true;
+	},
+	Logout : function (req) {
+		req.session.user.loggedIn = false;
+		req.session.user = {};
+	},
+	IsLoggedIn : function (req) {
+		return req.session.user && req.session.user.loggedIn === true;
+	}
+}
+
+// Routes
 
 /* URLs
  * / 
  * /i/ -> images
  * /l/ -> listing
  * /u/ -> user
- * /g/ -> groups
+ * /a/ -> admin
  * /e/ -> error
  */
 
-// Wildcards
-get('/css/:file', function(file) {	
-	sys.puts('proxying: ' + './public/css/' + file);
-	this.sendfile('./public/css/' + file);
-});
-get('/js/:file', function(file) {	
-	sys.puts('proxying: ' + './public/js/' + file);
-	this.sendfile('./public/js/' +  file);
-});
-get('/img/:file', function(file) {	
-	sys.puts('proxying: ' + './public/img/' + file);
-	this.sendfile('./public/img/' +  file);
+app.get('/', function(req, res) {
+
+	console.log('User is logged in: ' + (User.IsLoggedIn(req) ? 'true' : 'false'));
+	
+	if (User.IsLoggedIn(req)) {
+	
+		res.redirect('/l/all');
+		
+	} else {
+	
+		res.redirect('/u/login');
+		
+	}    
+	
 });
 
-
-
-// App Routing
-get('/', function () {
-	this.redirect('/l/all')
-});
 
 /*
- * /i/ is for Image
-*/
-var uploadImage = function (passcode) {
-	var self = this,
-		query,
-		passcode = passcode || '';
-			
-	// Assumes that all uploads will be .png
-	var randomstring = ut.randomstring(40);
-	var originalName = randomstring + config.images.sizeSeparator + config.images.sizes.original + '.png';
-	var smallName = randomstring + config.images.sizeSeparator + config.images.sizes.small + '.png';
+ * /l/ is for Listing
+ */
+ 
+app.get('/l/all', function (req, res) {
 	
-	var contentLength = parseInt(self.headers['content-length'], 10);
-	
-	var writeStream = fs.createWriteStream(config.images.basePath + originalName);	
-	writeStream.write(self.body, encoding='binary');
-	writeStream.end();
-		
-	var link = ut.randomstring(config.images.linkLength);
-		
-	// TODO: check link is unique
-	//Img.find({ linkid : link }).one(function(img) {}, true);	
-		
-	var imageDetails = { 
-		linkid: link, 
-		sizes : {
-			o : {
-				width : 0,
-				height : 0,
-				name : originalName,
-				views : 0
-			},
-			s : {
-				width : 0,
-				height : 0,
-				name : smallName,
-				views : 0
-			}
-		},
-		uploaded: new Date(), 
-		passcode: passcode 
-	};
-	
-	// Create a thumbnail
-	im.resize({
-		srcPath: config.images.basePath + imageDetails.sizes.o.name,
-		dstPath: config.images.basePath + imageDetails.sizes.s.name,
-		width: config.images.small.w,
-		height: config.images.small.h,
-		format: '.png'
-	}, function(err, stdout, stderr) {			
-	 	if (err) { throw err } 		
-		
-		// Read Metadata for Original Image		
-		im.identify(config.images.basePath + imageDetails.sizes.o.name, function(err, features) {
-		  	if (err) throw err
-						
-			imageDetails.sizes.o.width = features.width;
-			imageDetails.sizes.o.height = features.height;
-					
-			// Read Metadata for Small Image		
-			im.identify(config.images.basePath + imageDetails.sizes.s.name, function(err, features) {
-			  	if (err) throw err
-
-				imageDetails.sizes.s.width = features.width;
-				imageDetails.sizes.s.height = features.height;
-				
-				// create a new db entry
-				var img = new Img(imageDetails);
-				// save it
-				img.save();
-				
-				self.response.writeHead(201);
-				self.response.write(config.url.base + config.url.routes.image + link + '/' + config.images.sizes.original);
-				self.response.end();
-				
-			});						
-		});	
+	if (!User.IsLoggedIn(req)) {
+		res.redirect('/u/login');
+	} 	
+	res.render('image-list', {
+	  locals: {
+	    title: 'All',
+	    images: []
+	  }
 	});	
-};
-post('/i/upload/:pass', uploadImage);
-post('/i/upload', uploadImage);
-
-
-var fetchImage = function (id, size, pass) {
-	/* 
-	MATCHES:
-	 * /i/link/size/
-	 * /i/link/size/pass
+	/*
+	
+	Img.find({ userid: self.session.user._id  }).sort('uploaded', 'desc').each(function(img) {
+	
+		this.partial(img);
+		
+	}).then(function(imgs){
+		self.render('list.jade', {
+		    locals: {
+		      	title: 'List: All Images',
+				isAuthd: self.session.isAuthd,
+				debugmode: config.app.debugmode,
+				currentpath: self.url.pathname,
+				images: imgs,
+				basepath:  config.images.basePath
+		    }
+		});
+	});
 	*/
+
 			
-	var self = this;
-	
-	Img.find({ linkid : id }).one(function(img) {
-		
-		if (img.passcode === '' || (img.passcode === pass)) {
-					
-			img.sizes[size].views++;			
-			img.save();		
-	
-			self.sendfile(config.images.basePath +  img.sizes[size].name);	
-		
-		} else {	
-				
-			self.redirect('/');
-		
-		}
-	
-	}, true);
-}
-
-get('/i/:id/:size/:pass', fetchImage);
-get('/i/:id/:size/', fetchImage);
-
-get('/i/upload', function () {
-	var self = this;
-	
-	if (!self.session.isAuthd) {
-		self.redirect('/u/login?' + config.url.keys.referrer + '=/l/public');
-	}
-
-	self.render('upload.html.haml', {
-	    locals: {
-	      	title: 'Upload',
-			debugmode: config.app.debugmode,
-			currentpath: self.url.pathname,
-			isAuthd: self.session.isAuthd
-	    }
-	});
 });
-
-post('/i/delete/:id', function (id) {
-	var self = this;
-			
-	if (!self.session.isAuthd) {
-		this.redirect('/u/login?' + config.url.keys.referrer + '=/l/all');
-	}
-	
-	sys.puts('deleting: ' + id)
-	
-	Img.find({ linkid : id }).one(function(img) {
-								
-			img.remove(function () {			
-				self.response.writeHead(200);
-				self.response.write('All good');
-				self.response.end();
-			});		
-		
-    }, true);
-
-	// nothing to delete
-	//self.response.writeHead(400);
-	//self.response.write('Image not found');
-	//self.response.end();
-});
-
-/*
- * /u/ is for User
-*/
-post('/u/login', function(){      
+ 
+ /*
+  * /u/ is for User
+  */
+app.post('/u/create', function(){      
 	var self = this,
-		query = '',
-		referrer = '/l/all',
 		user = self.params.post.username,
-		pass = self.params.post.password;
-		
-	if (typeof user !== 'undefined' && typeof pass !== 'undefined') {
-		
-		if (user == config.admin.user && pass == config.admin.pass) {
-			self.session.isAuthd = true;
-				
-			self.redirect(referrer);         
-		}
-	} 
-	return false;
-});
-
-get('/u/login', function () {    
-	       
-   	var self = this;
-	
-	self.render('login.html.haml', {
-		layout: false,
-	    locals: {
-	      	title: 'Login',
-			debugmode: config.app.debugmode,
-			currentpath: self.url.pathname,
-			isAuthd: self.session.isAuthd
-	    }
-	});
-	
-});
-
-get('/u/logout', function () {
-
-	this.session.isAuthd = false;	
-	this.redirect('/');
-	
-});
-
-/*
- * /l/ is for List
-*/
-
-get('/l/all', function () {
-	var self = this;
-	
-	if (!self.session.isAuthd) {
-		this.redirect('/u/login?' + config.url.keys.referrer + '=/l/all');
-	}
-	
-		Img.find({}).sort('uploaded', 'desc').each(function(img) {
-
-			if (self.session.isAuthd) {
-				this.partial(img);
-			} else if (img.passcode === null || typeof img.passcode === 'undefined' || img.passcode.length <= 0) {
-		 		this.partial(img);
-			}
-	
-		}).then(function(imgs){
-		
-			self.render('list.html.haml', {
-			    locals: {
-			      	title: 'List: All Images',
-					isAuthd: self.session.isAuthd,
-					debugmode: config.app.debugmode,
-					currentpath: self.url.pathname,
-					images: imgs,
-					basepath:  config.images.basePath
-			    }
-			});
-		
-		});	
+		email = self.params.post.email,
+		pass = self.params.post.password;		
 			
+	Usr.find({ username : user }).one(function(usr) {
+		return false
+    }, true);
+	
+	Usr.find({ email : email }).one(function(usr) {
+		return false
+    }, true);	
+	
+	// create a new db entry
+	var usr = new Usr({
+		username : user,
+		password : pass,
+		email : email,
+		joined : new Date(),
+		lastlogin : new Date(),
+		role : 'NORMAL'
+	});
+	// save it
+	usr.save();
+
+	return true;
 });
 
-get('/l/public', function(){           
-	var self = this;
+app.post('/u/login', function (req, res) {     	  
+	  
+	if (!req.body || !req.body.user || !req.body.user.name || !req.body.user.password) {
 	
+		console.log('HAXX');
+		res.redirect('back');
+		
+	} else {
+	    
+		var user = req.body.user.name,
+		pass = req.body.user.password;
+		
+		if (typeof user !== 'undefined' && typeof pass !== 'undefined') {	
+			
+			console.log('logging in: ' + user);
+			
+			// check if user is in db... 
+			
+			// set session cookie
+			User.Login(req);
+			// 
+			res.redirect('/');
+			/*
+			Usr.find({
+				username: user,
+				password: pass
+			}).one(function(usr) {
 	
-	if (!self.session.isAuthd) {
-		this.redirect('/u/login?' + config.url.keys.referrer + '=/l/public');
+				usr.lastlogin = new Date();
+				usr.save();
+				
+				self.session.isAuthd = true;
+				self.session.user = usr;
+				self.redirect(self.session.redirectPage);
+		
+			}, true); */
+			
+		} 
+		return false;
+	
 	}
-	
-	Img.find({}).each(function(img) {
-	
-		if ((img.passcode.length <= 0)) {
-	 		this.partial(img);
-		}
+});
 
-	}).then(function(imgs){
-	
-		self.render('list.html.haml', {
-		    locals: {
-		      	title: 'List: Public Images',
-				isAuthd: self.session.isAuthd,
-				debugmode: config.app.debugmode,
-				currentpath: self.url.pathname,
-				images: imgs,
-				basepath:  config.images.basePath
-		    }
-		});
-	
+app.get('/u/login', function (req, res) {    	      	
+	res.render('login', {
+	  locals: {
+	    title: 'Login'
+	  }
 	});	
 });
 
-get('/l/private', function(){   
-	        
-   	var self = this;
-	
-	
-	if (!self.session.isAuthd) {
-		this.redirect('/u/login?' + config.url.keys.referrer + '=/l/private');
-	}
-	
-	Img.find({}).each(function(img) {
-	
-		if (img.passcode.length > 0) {
-	 		this.partial(img);
-		}
-
-	}).then(function(imgs){
-	
-		self.render('list.html.haml', {
-		    locals: {
-		      	title: 'List: Private Images',
-				isAuthd: self.session.isAuthd,
-				debugmode: config.app.debugmode,
-				currentpath: self.url.pathname,
-				images: imgs,
-				basepath:  config.images.basePath
-		    }
-		});
-	
-	});		
-	                      
-});
-
-
-get('/g/:id', function (id) {
-});
-get('/e/:code', function (code) {
-	// error
+app.get('/u/logout', function () {
 	
 });
 
-	
+// Only listen on $ node app.js
 
-run();
+if (!module.parent) {
+  app.listen(3000);
+  console.log("Express server listening on port %d", app.address().port)
+}
