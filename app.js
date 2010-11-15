@@ -118,7 +118,8 @@ app.error(function(err, req, res, next){
         res.render('404.jade', {
             status: 404,
             locals: {
-                error: err
+                error: err,
+                currentUser: UserAuth.TearOff(req)
             }
         });
         
@@ -150,6 +151,15 @@ var UserAuth = {
 	},
 	IsAdmin : function (req) {
 		return req.session.user && req.session.user.access == 'ADMIN';
+	},
+	Clear : function (req) {	
+		req.session.user = undefined;
+	},
+	TearOff : function (req) {		
+		return {
+			isLoggedIn : UserAuth.IsLoggedIn(req),
+			isAdmin : UserAuth.IsAdmin(req)
+		}
 	}
 }
 
@@ -225,7 +235,8 @@ app.get('/l/all', function (req, res) {
 			res.render('image-list', {
 				locals: {
 				  title: 'All Images',
-				  images: docs
+				  images: docs,
+				  currentUser: UserAuth.TearOff(req)
 				}
 			});	
 		  
@@ -278,8 +289,9 @@ app.get('/l/all', function (req, res) {
 	res.render('admin/edit-user', {
 		locals: {
 			title: 'Create User',
-			user: {}
-		}
+			user: {},
+			currentUser: UserAuth.TearOff(req)
+		} 
 	});	
  });
  
@@ -296,6 +308,7 @@ app.get('/l/all', function (req, res) {
 				res.render('admin/edit-user', {
 				  locals: {
 				    title: 'Edit User',
+				    currentUser: UserAuth.TearOff(req),
 				    user: doc
 				  }
 				});	
@@ -423,14 +436,19 @@ app.get('/u/login', function (req, res) {
   	      	
 	res.render('login', {
 	  locals: {
-	    title: 'Login'
+	    title: 'Login',
+	    currentUser: UserAuth.TearOff(req)
 	  }
 	});	
 	
 });
 
 
-app.get('/u/logout', function () {
+app.get('/u/logout/', function (req, res) {
+
+	UserAuth.Clear(req);
+	
+	res.redirect('/');
 	
 });
 
@@ -447,7 +465,8 @@ app.get('/a/', function (req, res) {
 			res.render('admin/admin', {
 				locals: {
 					title: 'Admin',
-					users: docs
+					users: docs,
+					currentUser: UserAuth.TearOff(req)
 				}
 			});	
 			

@@ -14,4 +14,15 @@ html.no-js( lang="en" )
     script( src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" )
     script( src="/js/plugins.dev.js" )
     script( src="/js/page.dev.js" )
-  body!= body
+  body
+    -if (currentUser.isLoggedIn)
+      div#nav
+        ul
+          li
+            a('href':'/') Home
+          li
+            a('href':'/u/logout/') Logout            
+          -if(currentUser.isAdmin)
+            li.right
+              a('href':'/a/') Admin
+    div#wrapper!= body

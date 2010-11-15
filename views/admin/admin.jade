@@ -1,7 +1,7 @@
 #form.admin
   h2 All Users
-  p
-    a#create-user('href':'/u/create/') Create User
+  div.buttons
+    a#create-user.button.right('href':'/u/create/') Create User
   -if (users.length)
     table#user-list
       thead

@@ -61,17 +61,33 @@ h1 {
 p {
     color: #999; }
 
-p a    {
+p a {
     color: #0AAF86; }
 
 p a:hover {
     color: #FF6; }
+    
+/* BUTTONS */
+div.buttons { 
+	margin-bottom: 15px; 
+	width: 100%;
+	overflow: hidden;}
+	div.buttons a.button {
+		display: block;
+		float: left;
+		background:  #000;
+		color:  #fff;
+		padding: 10px; }
+	div.buttons a.button.right {
+		float: right; }
+/* TABLES */
 table {
 	width: 100%; }
 	table thead { }
 		table thead tr { }
 			table thead tr th {
-				padding: 5px; }
+				padding: 5px;
+				border-bottom:  1px solid #000; }
 	table tbody { }
 		table tbody tr { }
 		table tbody tr:hover td {
@@ -80,8 +96,6 @@ table {
 				padding:  5px; }
 #wrapper {
     width: 100%; }
-.img-active #wrapper {
-	overflow: hidden; }
 #sidebar {
 	width: 30px;
 	position: fixed;
@@ -92,37 +106,29 @@ table {
 #sidebar:hover {
 	width: 205px; }
 	#nav {
-		width: 200px;
-	    background-color: #F2F2F2;
-		padding:20px 0;
-		border-top: 5px solid #1e1e1e;
-		border-right: 5px solid #1e1e1e;
-		border-bottom: 5px solid #1e1e1e;
-		-webkit-border-bottom-right-radius: 10px;
-		-moz-border-radius-bottomright: 10px;
-		border-bottom-right-radius: 10px;
-		-webkit-border-top-right-radius: 10px;
-		-moz-border-radius-topright: 10px;
-		border-top-right-radius: 10px; }
+		width: 600px;
+	    background-color: #1e1e1e;
+	    overflow:  hidden;
+	    position: fixed;
+	    left:  50%;
+	    top:  30px;
+	    margin-left: -300px; }
 		#nav ul {
 		    list-style-type: none;
 		    margin: 0px;
 		    padding: 0px; }
 			#nav ul li a {
 			    display: block;
-			    border-top: 1px solid #ccc;
-			    color: #333;
+			    float: left;
+			    color: #fff;
 			    font-weight: bold;
 			    text-decoration: none;
 			    cursor: pointer;
-			    padding: 11px 0px 11px 0px; }
-			#nav ul li:last-child a {
-			    border-bottom: 1px solid #ccc; }
-
+			    padding: 11px; }
 			#nav ul li a:hover {
+				color:  #333;
 			    text-decoration: underline;
 			    background: #ffc; }
-
 			#nav ul li a.selected {
 			    color: #777;
 			    background: #fff;
