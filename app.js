@@ -135,9 +135,11 @@ app.error(function(err, req, res, next){
 
 // User Auth
 var UserAuth = {
-	Login : function (req) {
+	Login : function (req, user) {
 		req.session.user = {};
 		req.session.user.loggedIn = true;
+		console.log(user.role);
+		req.session.user.access = user.role;
 	},
 	Logout : function (req) {
 		req.session.user.loggedIn = false;
@@ -145,6 +147,9 @@ var UserAuth = {
 	},
 	IsLoggedIn : function (req) {
 		return req.session.user && req.session.user.loggedIn === true;
+	},
+	IsAdmin : function (req) {
+		return req.session.user && req.session.user.access == 'ADMIN';
 	}
 }
 
@@ -216,9 +221,8 @@ app.get('/l/all', function (req, res) {
 		  
 			console.log("Error: " + err);  
 			console.log("Image: " + docs.length);   
-			
-			
-			res.render('images', {
+						
+			res.render('image-list', {
 				locals: {
 				  title: 'All Images',
 				  images: docs
@@ -290,9 +294,7 @@ app.get('/u/edit/:username', function (req, res) {
 			
 				//TODO: Raise error
 				console.log('No user with username: ' + req.params.username);
-			}
-			
-			
+			}	
 			
 		});
 	}
@@ -320,6 +322,7 @@ app.post('/u/edit/', function (req, res) {
 					doc.username = req.body.user.name;
 					doc.password = req.body.user.password;
 					doc.email = req.body.user.email;
+					doc.role = (typeof req.body.user.role == 'undefined' ? 'NORMAL' : req.body.user.role);
 					
 					doc.save(function (err) {
 						if (err) { 
@@ -379,25 +382,26 @@ app.post('/u/login', function (req, res) {
 			console.log('logging in: ' + user);
 			
 			// check if user is in db... 
-			
-			// set session cookie
-			UserAuth.Login(req);
-			// 
-			res.redirect('/');
-			/*
-			Usr.find({
-				username: user,
-				password: pass
-			}).one(function(usr) {
-	
-				usr.lastlogin = new Date();
-				usr.save();
+			User.find({ username : req.body.user.name, password : req.body.user.password }).one(function (err, doc) {
+				if (typeof doc != 'undefined') {
 				
-				self.session.isAuthd = true;
-				self.session.user = usr;
-				self.redirect(self.session.redirectPage);
-		
-			}, true); */
+					doc.lastlogin = new Date();
+					doc.save();
+					
+					// set session cookie
+					UserAuth.Login(req, doc);
+					// 
+					res.redirect('/');
+				
+				} else {
+					
+					console.log('User details incorrect')
+					//TODO: throw error
+					res.redirect('/');
+					
+				}
+			
+			}); 
 			
 		} 
 		return false;
@@ -426,18 +430,25 @@ app.get('/u/logout', function () {
  
 app.get('/a/', function (req, res) {
 	
-	User.all(function(err, docs) {
+	if ( UserAuth.IsAdmin(req) ) {
 	
-		console.log(docs);
+		User.all(function(err, docs) {
+				
+			res.render('admin/admin', {
+				locals: {
+					title: 'Admin',
+					users: docs
+				}
+			});	
+			
+		});
 		
-		res.render('admin/admin', {
-			locals: {
-				title: 'Admin',
-				users: docs
-			}
-		});	
-		
-	});
+	} else {
+	
+		//TODO: throw error
+		res.redirect('/');
+	
+	}
 });
 
 // Only listen on $ node app.js
