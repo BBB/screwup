@@ -2,18 +2,20 @@
   h2 Edit User
   form( method: 'post', action: '/u/edit/')
     div
-      label( for: 'username') username
+      label( for: 'username') username:
       input( type: 'text', name: 'user[name]', id: 'username', value : user.username )
     div
-      label( for: 'email') email
+      label( for: 'email') email:
       input( type: 'text', name: 'user[email]', id: 'email', value : user.email )
     div
-      label( for: 'password')  password
+      label( for: 'password')  password:
       input( type: 'text', name: 'user[password]', id: 'password', value : user.password )
     div
       label( for: 'role') role:
+    div
       select(id:'role', name:'user[role]')
         option(value:'NORMAL') normal
         option(value:'ADMIN', 'selected':(user.role=='ADMIN'?'selected':'')) admin
     div.buttons
       input( type: 'submit', value: 'Save Changes' )
+      a(href: '/a/') Cancel
