@@ -43,39 +43,32 @@ body {
     font-family: "Helvetica Neue", "Lucida Grande", "Arial";
     font-size: 13px;
     text-align: center;
-    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
-    -moz-text-stroke: 1px rgba(255, 255, 255, 0.1);
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    user-select: none;
-    color: #555;
-    background: #1e1e1e;
+    color: #000;
+    background-color: #fff;
     padding: 0;
     margin: 0;
-    height: 100%;}
+    height: 100%; }
 
 h1, h2 {
-    font-size: 16px;
-    font-weight: :bold;
-    color: #e2e0bb;
-    margin: 25px 35px 15px;
-    text-transform: titlecase;}
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0 0 15px;
+    text-transform: titlecase; }
 
 h1 {
-    text-shadow: 1px 2px 2px #ddd;
-    font-size: 60px;}
+    font-size: 16px; }
 
 p {
-    color: #999;}
+    color: #999; }
 
 p a    {
-    color: #0AAF86;}
+    color: #0AAF86; }
 
 p a:hover {
-    color: #FF6;}
+    color: #FF6; }
 
 #wrapper {
-    width: 100%;}
+    width: 100%; }
 .img-active #wrapper {
 	overflow: hidden; }
 #viewer {
@@ -116,13 +109,13 @@ p a:hover {
 			    font-weight: bold;
 			    text-decoration: none;
 			    cursor: pointer;
-			    padding: 11px 0px 11px 0px;}
+			    padding: 11px 0px 11px 0px; }
 			#nav ul li:last-child a {
 			    border-bottom: 1px solid #ccc; }
 
 			#nav ul li a:hover {
 			    text-decoration: underline;
-			    background: #ffc;}
+			    background: #ffc; }
 
 			#nav ul li a.selected {
 			    color: #777;
@@ -142,13 +135,13 @@ p a:hover {
 		margin-top:-30px;
 		margin-left:-30px;
 		background: url('/img/closeviewer-bg.png') 0 0 no-repeat;
-		text-indent:-9999px;}
+		text-indent:-9999px; }
 	a#close-viewer:hover {
 		background-position: 0 -60px;
 		cursor: pointer; }
 #form {
 		text-align: left; 
-		padding: 100px;}
+		padding: 100px; }
 		#form label {
 		width:200px;
 		display:block;
@@ -188,7 +181,7 @@ p a:hover {
 #images .image.selected:hover {
 	border-color: #2d87dd;
 	background-color: #2d87dd; 
-	padding-bottom: 0px;}	
+	padding-bottom: 0px; }	
 	#images .image.selected:hover .wrapper a.nor {
 		display:none; }
 	#images .image.selected:hover .wrapper a.sel {
@@ -236,7 +229,7 @@ p a:hover {
 			font-size: 10px;
 			font-weight: bold;
 			background: url('/img/eye-bg.png') 0 center no-repeat; 
-			color:#000;}
+			color:#000; }
 	#images .image .wrapper  {		
 		position:relative;
 	    -webkit-border-radius: 5px;
@@ -251,7 +244,7 @@ p a:hover {
 		 	position: absolute;
 			padding:3px 3px 1px; }
 		#images .image .wrapper a:hover {
-			background-color: rgba( 21, 255, 60, 0.7);}
+			background-color: rgba( 21, 255, 60, 0.7); }
 	#images .image:hover .wrapper {
 		-webkit-border-radius: 0px;
 	    -moz-border-radius: 0px;
@@ -263,7 +256,7 @@ p a:hover {
 			left: 5px;
 			padding: 0px 3px 0px; }
 		#images .image .wrapper a.delete:hover {
-			background-color: rgba( 255, 000, 000, 0.7);}
+			background-color: rgba( 255, 000, 000, 0.7); }
 		#images .image .wrapper a.zoom {
 			bottom: 5px;
 			right: 5px; }
@@ -292,7 +285,7 @@ p a:hover {
 		padding:3px;
 		-webkit-border-top-left-radius: 3px;
 		-moz-border-radius-topleft: 3px;
-		border-top-left-radius: 3px;}
+		border-top-left-radius: 3px; }
 	
 div#groups {
 	width: 150px;

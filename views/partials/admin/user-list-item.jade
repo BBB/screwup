@@ -1,2 +1,8 @@
-li= user.username +  ' (' + user.email + ') ' + user.role
-  a( href : '/u/edit/' + user.username )  edit
+tr
+  td= user.username
+  td= user.email
+  td= user.joined
+  td= user.lastlogin
+  td= user.role
+  td
+    a( href : '/u/edit/' + user.username )  edit

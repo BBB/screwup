@@ -15,4 +15,13 @@
   hr
   h2 All Users
   -if (users.length)
-    ul#user-list!= partial('admin/user-list-item', { collection: users, as: 'user' })
+    table#user-list
+      thead
+        tr
+          th Username
+          th Email
+          th Date Joined
+          th Last Login
+          th Role
+          th Action
+      tbody!= partial('admin/user-list-item', { collection: users, as: 'user' })
