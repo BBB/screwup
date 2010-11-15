@@ -66,16 +66,22 @@ p a    {
 
 p a:hover {
     color: #FF6; }
-
+table {
+	width: 100%; }
+	table thead { }
+		table thead tr { }
+			table thead tr th {
+				padding: 5px; }
+	table tbody { }
+		table tbody tr { }
+		table tbody tr:hover td {
+			background: #eee; }
+			table tbody tr td {
+				padding:  5px; }
 #wrapper {
     width: 100%; }
 .img-active #wrapper {
 	overflow: hidden; }
-#viewer {
-	position: fixed;
-	top : 50%;
-	left: 50%;
-}
 #sidebar {
 	width: 30px;
 	position: fixed;

@@ -273,7 +273,17 @@ app.get('/l/all', function (req, res) {
 /*
  * /u/ is for User 
  */
-app.get('/u/edit/:username', function (req, res) {   
+ app.get('/u/create/', function (req, res) {   
+ 
+	res.render('admin/edit-user', {
+		locals: {
+			title: 'Create User',
+			user: {}
+		}
+	});	
+ });
+ 
+ app.get('/u/edit/:username', function (req, res) {   
 
 	console.log('Editing user: ' + req.params.username);  
 	

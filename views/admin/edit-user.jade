@@ -1,5 +1,5 @@
 #form.admin
-  h2 Edit User
+  h2= title
   form( method: 'post', action: '/u/edit/')
     div
       label( for: 'username') username:
@@ -17,5 +17,5 @@
         option(value:'NORMAL') normal
         option(value:'ADMIN', 'selected':(user.role=='ADMIN'?'selected':'')) admin
     div.buttons
-      input( type: 'submit', value: 'Save Changes' )
+      input( type: 'submit', value: 'Save' )
       a(href: '/a/') Cancel

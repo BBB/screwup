@@ -1,19 +1,7 @@
 #form.admin
-  h2 Create User
-  form( method: 'post', action: '/u/edit/' )
-    div
-      label( for: 'username') username
-      input( type: 'text', name: 'user[name]', id: 'username' )
-    div
-      label( for: 'email') email
-      input( type: 'text', name: 'user[email]', id: 'email' )
-    div
-      label( for: 'password')  password
-      input( type: 'password', name: 'user[password]', id: 'password' )
-    div.buttons
-      input( type: 'submit', value: 'Create' )
-  hr
   h2 All Users
+  p
+    a#create-user('href':'/u/create/') Create User
   -if (users.length)
     table#user-list
       thead
